@@ -1,0 +1,18 @@
+galaxy_info:
+  author: Lucas Janin
+  description: Manage DNS records in Pi-hole's version 6configuration on bare metal.
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - pihole
+    - dns
+    - networking
+
+dependencies: []

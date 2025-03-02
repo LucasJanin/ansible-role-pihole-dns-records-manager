@@ -1,0 +1,144 @@
+---
+# tasks file for pihole-dns-records
+
+# Debug to show who we are
+- name: Debug - Show current user
+  command: whoami
+  register: current_user
+  delegate_to: localhost
+  connection: local
+  become: false
+  changed_when: false
+
+- name: Debug - Show home directory
+  command: echo $HOME
+  register: home_dir
+  delegate_to: localhost
+  connection: local
+  become: false
+  changed_when: false
+
+- name: Debug - Display current user and home directory
+  debug:
+    msg:
+      - "Current user: {{ current_user.stdout }}"
+      - "Home directory: {{ home_dir.stdout }}"
+  delegate_to: localhost
+  connection: local
+  become: false
+
+# Create role data directory if it doesn't exist
+- name: Ensure role data directory exists
+  file:
+    path: "{{ pihole_local_storage_dir }}"
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+  connection: local
+  become: false
+
+# Pre-processing: Remove existing hosts from previous runs if the save file exists
+- name: Check if previous hosts save file exists
+  stat:
+    path: "{{ pihole_hosts_save_file }}"
+  register: hosts_save_file
+  delegate_to: localhost
+  connection: local
+  become: false
+
+- name: Read previous hosts from save file if it exists
+  slurp:
+    src: "{{ pihole_hosts_save_file }}"
+  register: previous_hosts_content
+  when: hosts_save_file.stat.exists
+  delegate_to: localhost
+  connection: local
+  become: false
+
+- name: Parse previous hosts
+  set_fact:
+    previous_hostnames: "{{ previous_hosts_content.content | b64decode | from_json }}"
+  when: hosts_save_file.stat.exists
+  delegate_to: localhost
+  connection: local
+  become: false
+
+# Main processing: Fetch Pi-hole config and manage DNS records
+- name: Fetch pihole.toml from remote Pi-hole server
+  fetch:
+    src: /etc/pihole/pihole.toml
+    dest: "{{ pihole_config_file }}"
+    flat: yes
+  delegate_to: "{{ pihole_host }}"
+  become: true
+
+# Remove previous hosts if needed
+- name: Remove previous hosts before adding new ones
+  command: >
+    python3 {{ role_path }}/files/manage_pihole_dns_records.py 
+    --action remove
+    --hostnames '{{ previous_hostnames | to_json }}'
+    --config "{{ pihole_config_file }}"
+  register: cleanup_result
+  when: 
+    - hosts_save_file.stat.exists
+    - previous_hostnames is defined
+    - previous_hostnames | length > 0
+    - pihole_dns_action | default('add') == 'add'
+  delegate_to: localhost
+  connection: local
+  become: false
+
+- name: Display cleanup output
+  debug:
+    var: cleanup_result.stdout_lines
+  when: cleanup_result is defined and cleanup_result.stdout is defined
+  delegate_to: localhost
+  connection: local
+  become: false
+
+- name: Manage DNS records using Python script locally
+  command: >
+    python3 {{ role_path }}/files/manage_pihole_dns_records.py 
+    --action {{ pihole_dns_action | default('add') }}
+    --hostnames '{{ dev_hostnames | to_json }}'
+    {% if pihole_dns_action | default('add') == 'add' %}
+    --ips '{{ dev_ips | to_json }}'
+    {% endif %}
+    --config "{{ pihole_config_file }}"
+  register: script_result
+  changed_when: "'Added' in script_result.stdout or 'Removed' in script_result.stdout"
+  failed_when: "script_result.rc != 0"
+  delegate_to: localhost
+  connection: local
+  become: false
+
+- name: Display script output
+  debug:
+    var: script_result.stdout_lines
+  delegate_to: localhost
+  connection: local
+  become: false
+
+- name: Copy modified pihole.toml back to Pi-hole server
+  copy:
+    src: "{{ pihole_config_file }}"
+    dest: /etc/pihole/pihole.toml
+    owner: pihole
+    group: pihole
+    mode: '0644'
+  delegate_to: "{{ pihole_host }}"
+  become: true
+  when: "'Added' in script_result.stdout or 'Removed' in script_result.stdout"
+  notify: restart pihole-FTL
+
+# Post-processing: Save the list of hosts for future cleanup
+- name: Save current hostnames to file for future cleanup
+  copy:
+    content: "{{ dev_hostnames | to_json }}"
+    dest: "{{ pihole_hosts_save_file }}"
+    mode: '0644'
+  delegate_to: localhost
+  connection: local
+  become: false
+  when: pihole_dns_action | default('add') == 'add'

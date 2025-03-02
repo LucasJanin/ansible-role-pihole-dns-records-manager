@@ -1,0 +1,9 @@
+---
+# Handlers for pihole-dns-records role
+
+- name: restart pihole-FTL
+  systemd:
+    name: pihole-FTL
+    state: restarted
+  delegate_to: "{{ pihole_host }}"
+  become: true

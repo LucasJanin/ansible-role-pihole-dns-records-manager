@@ -1,0 +1,15 @@
+---
+# Default variables for pihole-dns-records-manager role
+
+# Action to perform (add or remove)
+pihole_dns_action: "add"
+
+# Pi-hole host to connect to
+pihole_host: "pihole"
+
+# Default empty arrays for hostnames and IPs
+dev_hostnames: []
+dev_ips: []
+
+# Path for local storage
+pihole_local_storage_dir: "{{ lookup('env', 'HOME') }}/.ansible-role-pihole-dns-reccords-manager"

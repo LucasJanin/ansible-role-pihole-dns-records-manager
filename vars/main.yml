@@ -1,0 +1,6 @@
+---
+# Variables for pihole-dns-records role
+
+# Path configuration
+pihole_config_file: "{{ pihole_local_storage_dir }}/pihole.toml"
+pihole_hosts_save_file: "{{ pihole_local_storage_dir }}/pihole_managed_hosts.json"
