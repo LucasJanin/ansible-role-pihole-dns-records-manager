@@ -1,6 +1,6 @@
 # Ansible Role: Pi-hole DNS Records
 
-This role manages DNS records in a Pi-hole 6, supporting both standard and Docker-based installations. Pihole 5 is also supported.
+This role manages DNS records in Pi-hole 6, supporting both standard and Docker-based installations. Pi-hole 5 is not supported due to its different configuration files.
 
 ## Features
 
