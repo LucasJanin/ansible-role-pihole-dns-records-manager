@@ -69,6 +69,10 @@ This role manages DNS records in Pi-hole 6, supporting both standard and Docker-
           - server2.local
 ```
 
+## Example Playbook
+
+Check the [examples](examples/) directory for sample playbooks.
+
 ## License
 
 MIT
