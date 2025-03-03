@@ -1,32 +1,6 @@
 ---
 # tasks file for pihole-dns-records
 
-# Debug to show who we are
-- name: Debug - Show current user
-  command: whoami
-  register: current_user
-  delegate_to: localhost
-  connection: local
-  become: false
-  changed_when: false
-
-- name: Debug - Show home directory
-  command: echo $HOME
-  register: home_dir
-  delegate_to: localhost
-  connection: local
-  become: false
-  changed_when: false
-
-- name: Debug - Display current user and home directory
-  debug:
-    msg:
-      - "Current user: {{ current_user.stdout }}"
-      - "Home directory: {{ home_dir.stdout }}"
-  delegate_to: localhost
-  connection: local
-  become: false
-
 # Create role data directory if it doesn't exist
 - name: Ensure role data directory exists
   file:
@@ -66,7 +40,7 @@
 # Main processing: Fetch Pi-hole config and manage DNS records
 - name: Fetch pihole.toml from remote Pi-hole server
   fetch:
-    src: /etc/pihole/pihole.toml
+    src: "{{ pihole_toml_file }}"
     dest: "{{ pihole_config_file }}"
     flat: yes
   delegate_to: "{{ pihole_host }}"
@@ -120,17 +94,23 @@
   connection: local
   become: false
 
-- name: Copy modified pihole.toml back to Pi-hole server
+# Copy modified config back to Pi-hole server
+- name: Copy modified pihole.toml back to {{ pihole_host }} server
   copy:
     src: "{{ pihole_config_file }}"
-    dest: /etc/pihole/pihole.toml
-    owner: pihole
-    group: pihole
-    mode: '0644'
+    dest: "{{ pihole_toml_file }}"
   delegate_to: "{{ pihole_host }}"
   become: true
   when: "'Added' in script_result.stdout or 'Removed' in script_result.stdout"
-  notify: restart pihole-FTL
+
+- name: Restore original ownership and permissions
+  shell: |
+    chown --reference={{ pihole_toml_file }}.bak {{ pihole_toml_file }}
+    chmod --reference={{ pihole_toml_file }}.bak {{ pihole_toml_file }}
+  delegate_to: "{{ pihole_host }}"
+  become: true
+  when: "'Added' in script_result.stdout or 'Removed' in script_result.stdout"
+  notify: "{{ 'restart pihole docker container' if pihole_docker_mode else 'restart pihole-FTL' }}"
 
 # Post-processing: Save the list of hosts for future cleanup
 - name: Save current hostnames to file for future cleanup

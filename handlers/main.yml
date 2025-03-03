@@ -1,5 +1,8 @@
 ---
-# Handlers for pihole-dns-records role
+# File: handlers/main.yml
+# Description: Handlers for pihole-dns-records role
+# Author: Lucas Janin
+# Date: 2025-03-03
 
 - name: restart pihole-FTL
   systemd:
@@ -7,3 +10,10 @@
     state: restarted
   delegate_to: "{{ pihole_host }}"
   become: true
+  when: not pihole_docker_mode
+
+- name: restart pihole docker container
+  command: "docker restart {{ pihole_docker_container_name }}"
+  delegate_to: "{{ pihole_host }}"
+  become: true
+  when: pihole_docker_mode

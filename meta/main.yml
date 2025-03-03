@@ -1,18 +1,23 @@
+---
+# File: meta/main.yml
+# Description: Role metadata for Ansible Galaxy
+# Author: Lucas Janin
+# Date: 2025-03-03
+
 galaxy_info:
+  role_name: pihole_dns_records
   author: Lucas Janin
-  description: Manage DNS records in Pi-hole's version 6configuration on bare metal.
+  description: Manages Pi-hole DNS records for both standard and Docker installations
   license: MIT
   min_ansible_version: "2.9"
   platforms:
-    - name: Debian
+    - name: GenericLinux
       versions:
         - all
-    - name: Ubuntu
-      versions:
-        - all
+
   galaxy_tags:
     - pihole
     - dns
-    - networking
+    - docker
 
-dependencies: []
+dependencies: []  # No direct dependencies

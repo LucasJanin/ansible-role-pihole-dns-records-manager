@@ -1,15 +1,25 @@
 ---
-# Default variables for pihole-dns-records-manager role
+# File: defaults/main.yml
+# Description: Default variables for pihole-dns-records role
+# Author: Lucas Janin
+# Date: 2025-03-03
 
-# Action to perform (add or remove)
-pihole_dns_action: "add"
-
-# Pi-hole host to connect to
+# Pi-hole configuration
 pihole_host: "pihole"
 
-# Default empty arrays for hostnames and IPs
+# Path to Pi-hole configuration file on the remote host
+pihole_toml_file: "/etc/pihole/pihole.toml" 
+
+# Local storage directory for the role
+pihole_local_storage_dir: "/tmp/pihole-dns-records-manager"
+pihole_config_file: "{{ pihole_local_storage_dir }}/pihole.toml"
+pihole_hosts_save_file: "{{ pihole_local_storage_dir }}/previous_hosts.json"
+pihole_dns_action: "add"
+
+# Docker configuration
+pihole_docker_mode: false
+pihole_docker_container_name: "pihole"
+
+# Default empty lists for hosts configuration
 dev_hostnames: []
 dev_ips: []
-
-# Path for local storage
-pihole_local_storage_dir: "{{ lookup('env', 'HOME') }}/.ansible-role-pihole-dns-reccords-manager"
