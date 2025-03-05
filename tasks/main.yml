@@ -83,14 +83,6 @@
   connection: local
   become: false
 
-- name: Display cleanup output
-  debug:
-    var: cleanup_result.stdout_lines
-  when: cleanup_result is defined and cleanup_result.stdout is defined
-  delegate_to: localhost
-  connection: local
-  become: false
-
 # Add new DNS records
 - name: Add new DNS records
   command: >
@@ -102,13 +94,6 @@
   register: script_result
   changed_when: "'Added' in script_result.stdout"
   failed_when: "script_result.rc != 0"
-  delegate_to: localhost
-  connection: local
-  become: false
-
-- name: Display script output
-  debug:
-    var: script_result.stdout_lines
   delegate_to: localhost
   connection: local
   become: false
