@@ -1,5 +1,8 @@
 ---
-# tasks file for pihole-dns-records
+# File: tasks/main.yml
+# Description: Main tasks for pihole-dns-records role
+# Author: Lucas Janin
+# Date: 2025-03-04
 
 # Create role data directory if it doesn't exist
 - name: Ensure role data directory exists
@@ -11,7 +14,7 @@
   connection: local
   become: false
 
-# Pre-processing: Remove existing hosts from previous runs if the save file exists
+# Pre-processing: Check for previous hosts configuration
 - name: Check if previous hosts save file exists
   stat:
     path: "{{ pihole_hosts_save_file }}"
@@ -37,7 +40,17 @@
   connection: local
   become: false
 
-# Main processing: Fetch Pi-hole config and manage DNS records
+# Validate input parameters
+- name: Validate input parameters
+  assert:
+    that:
+      - dev_hostnames | length == dev_ips | length
+    fail_msg: "The lists of hostnames and IPs must have the same length"
+  delegate_to: localhost
+  connection: local
+  become: false
+
+# Main processing: Fetch Pi-hole config
 - name: Fetch pihole.toml from remote Pi-hole server
   fetch:
     src: "{{ pihole_toml_file }}"
@@ -46,7 +59,15 @@
   delegate_to: "{{ pihole_host }}"
   become: true
 
-# Remove previous hosts if needed
+# Get original file stats
+- name: Get original file stats
+  stat:
+    path: "{{ pihole_toml_file }}"
+  register: original_file_stats
+  delegate_to: "{{ pihole_host }}"
+  become: true
+
+# Remove previous hosts before adding new ones
 - name: Remove previous hosts before adding new ones
   command: >
     python3 {{ role_path }}/files/manage_pihole_dns_records.py 
@@ -58,7 +79,6 @@
     - hosts_save_file.stat.exists
     - previous_hostnames is defined
     - previous_hostnames | length > 0
-    - pihole_dns_action | default('add') == 'add'
   delegate_to: localhost
   connection: local
   become: false
@@ -71,17 +91,16 @@
   connection: local
   become: false
 
-- name: Manage DNS records using Python script locally
+# Add new DNS records
+- name: Add new DNS records
   command: >
     python3 {{ role_path }}/files/manage_pihole_dns_records.py 
-    --action {{ pihole_dns_action | default('add') }}
+    --action add
     --hostnames '{{ dev_hostnames | to_json }}'
-    {% if pihole_dns_action | default('add') == 'add' %}
     --ips '{{ dev_ips | to_json }}'
-    {% endif %}
     --config "{{ pihole_config_file }}"
   register: script_result
-  changed_when: "'Added' in script_result.stdout or 'Removed' in script_result.stdout"
+  changed_when: "'Added' in script_result.stdout"
   failed_when: "script_result.rc != 0"
   delegate_to: localhost
   connection: local
@@ -94,22 +113,19 @@
   connection: local
   become: false
 
-# Copy modified config back to Pi-hole server
-- name: Copy modified pihole.toml back to {{ pihole_host }} server
+# Copy modified config back to Pi-hole server with preserved permissions
+- name: Copy modified pihole.toml back to server
   copy:
     src: "{{ pihole_config_file }}"
     dest: "{{ pihole_toml_file }}"
+    owner: "{{ original_file_stats.stat.pw_name | default(omit) }}"
+    group: "{{ original_file_stats.stat.gr_name | default(omit) }}"
+    mode: "{{ original_file_stats.stat.mode | default(omit) }}"
   delegate_to: "{{ pihole_host }}"
   become: true
-  when: "'Added' in script_result.stdout or 'Removed' in script_result.stdout"
-
-- name: Restore original ownership and permissions
-  shell: |
-    chown --reference={{ pihole_toml_file }}.bak {{ pihole_toml_file }}
-    chmod --reference={{ pihole_toml_file }}.bak {{ pihole_toml_file }}
-  delegate_to: "{{ pihole_host }}"
-  become: true
-  when: "'Added' in script_result.stdout or 'Removed' in script_result.stdout"
+  when: >
+    (script_result is defined and script_result.stdout is defined and 'Added' in script_result.stdout) or
+    (cleanup_result is defined and cleanup_result.stdout is defined and 'Removed' in cleanup_result.stdout)
   notify: "{{ 'restart pihole docker container' if pihole_docker_mode else 'restart pihole-FTL' }}"
 
 # Post-processing: Save the list of hosts for future cleanup
@@ -121,4 +137,3 @@
   delegate_to: localhost
   connection: local
   become: false
-  when: pihole_dns_action | default('add') == 'add'

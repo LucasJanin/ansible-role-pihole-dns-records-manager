@@ -2,7 +2,7 @@
 # File: defaults/main.yml
 # Description: Default variables for pihole-dns-records role
 # Author: Lucas Janin
-# Date: 2025-03-03
+# Date: 2025-03-04
 
 # Pi-hole configuration
 pihole_host: "pihole"
@@ -14,7 +14,6 @@ pihole_toml_file: "/etc/pihole/pihole.toml"
 pihole_local_storage_dir: "/tmp/pihole-dns-records-manager"
 pihole_config_file: "{{ pihole_local_storage_dir }}/pihole.toml"
 pihole_hosts_save_file: "{{ pihole_local_storage_dir }}/previous_hosts.json"
-pihole_dns_action: "add"
 
 # Docker configuration
 pihole_docker_mode: false
