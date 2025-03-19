@@ -18,7 +18,3 @@ pihole_hosts_save_file: "{{ pihole_local_storage_dir }}/previous_hosts.json"
 # Docker configuration
 pihole_docker_mode: false
 pihole_docker_container_name: "pihole"
-
-# Default empty lists for hosts configuration
-dev_hostnames: []
-dev_ips: []

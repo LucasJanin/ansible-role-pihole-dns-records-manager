@@ -32,11 +32,7 @@ ansible-playbook -i inventory playbooks/pihole-dns-reccords-manager.yml
   hosts: all
   become: true
   become_method: sudo
-  vars:
-    # Dynamic discovery variables
-    dev_hostnames: "{{ ansible_play_hosts_all }}"
-    dev_ips: "{{ ansible_play_hosts_all | map('extract', hostvars, 'ansible_host') | list }}"
-
+  
   tasks:
     - name: ansible-role-pihole-dns-reccords-manager
       include_role:
@@ -47,8 +43,6 @@ ansible-playbook -i inventory playbooks/pihole-dns-reccords-manager.yml
 ## The key components are:
 
 - ⁠hosts: all: Targets all hosts in your inventory
-- ⁠dev_hostnames: Dynamically populated with all hostnames
-- ⁠dev_ips: Extracts the IP addresses from the inventory
 - ⁠run_once: true: Ensures the role only runs once, not for each host
 
 ## Inventory Example

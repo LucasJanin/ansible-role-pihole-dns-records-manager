@@ -7,11 +7,7 @@
   hosts: all
   become: true
   become_method: sudo
-  vars:
-    # Dynamic discovery variables
-    dev_hostnames: "{{ ansible_play_hosts_all }}"
-    dev_ips: "{{ ansible_play_hosts_all | map('extract', hostvars, 'ansible_host') | list }}"
-
+  
   tasks:
     - name: ansible-role-pihole-dns-reccords-manager
       include_role:

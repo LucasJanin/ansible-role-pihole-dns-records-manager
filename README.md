@@ -23,8 +23,6 @@ This role manages DNS records in Pi-hole 6, supporting both standard and Docker-
 | `pihole_hosts_save_file` | File to save previous hosts for cleanup | `{{ pihole_local_storage_dir }}/previous_hosts.json` |
 | `pihole_docker_mode` | Whether Pi-hole is installed via Docker | `false` |
 | `pihole_docker_container_name` | Name of the Pi-hole Docker container | `pihole` |
-| `dev_hostnames` | List of hostnames to configure | `[]` |
-| `dev_ips` | List of corresponding IP addresses | `[]` |
 
 ## Example Usage
 
@@ -33,14 +31,6 @@ This role manages DNS records in Pi-hole 6, supporting both standard and Docker-
 - hosts: localhost
   roles:
     - role: pihole_dns_records
-      vars:
-        pihole_host: pihole
-        dev_hostnames:
-          - server1.local
-          - server2.local
-        dev_ips:
-          - 192.168.1.10
-          - 192.168.1.11
 
 # Docker-based Pi-hole Installation
 - hosts: localhost
@@ -50,12 +40,7 @@ This role manages DNS records in Pi-hole 6, supporting both standard and Docker-
         pihole_host: pihole
         pihole_docker_mode: true
         pihole_docker_container_name: pihole
-        dev_hostnames:
-          - server1.local
-          - server2.local
-        dev_ips:
-          - 192.168.1.10
-          - 192.168.1.11
+
 ```
 
 ## Example Playbook
@@ -66,8 +51,18 @@ Check the [examples](examples/) directory for sample playbooks.
 
 MIT
 
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin feature/my-new-feature`)
+5. Create a new Pull Request
+
 ## Author Information
 
-- Lucas Janin
-- https://lucasjanin.com
-- https://mastodon.social/@lucas3d
+Lucas Janin
+- Mastodon: [https://mastodon.social/@lucas3d](https://mastodon.social/@lucas3d)
+- Website: [https://www.lucasjanin.com](https://www.lucasjanin.com)
+- GitHub: [github.com/lucasjanin](https://github.com/lucasjanin)
+- LinkedIn: [linkedin.com/in/lucasjanin](https://linkedin.com/in/lucasjanin)

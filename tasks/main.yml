@@ -2,7 +2,7 @@
 # File: tasks/main.yml
 # Description: Main tasks for pihole-dns-records role
 # Author: Lucas Janin
-# Date: 2025-03-04
+# Date: 2025-03-19
 
 # Create role data directory if it doesn't exist
 - name: Ensure role data directory exists
@@ -40,15 +40,27 @@
   connection: local
   become: false
 
+# Create list of IP addresses from hostvars
+- name: Create list of IP addresses
+  set_fact:
+    host_ips: "{{ host_ips | default([]) + [hostvars[item].ansible_host | default('')] }}"
+  loop: "{{ ansible_play_hosts_all }}"
+  delegate_to: localhost
+  connection: local
+  become: false
+  run_once: true
+
 # Validate input parameters
 - name: Validate input parameters
   assert:
     that:
-      - dev_hostnames | length == dev_ips | length
-    fail_msg: "The lists of hostnames and IPs must have the same length"
+      - ansible_play_hosts_all | length == host_ips | length
+      - not (host_ips | select('equalto', '') | list | length > 0)
+    fail_msg: "All hosts must have ansible_host defined"
   delegate_to: localhost
   connection: local
   become: false
+  run_once: true
 
 # Main processing: Fetch Pi-hole config
 - name: Fetch pihole.toml from remote Pi-hole server
@@ -88,8 +100,8 @@
   command: >
     python3 {{ role_path }}/files/manage_pihole_dns_records.py 
     --action add
-    --hostnames '{{ dev_hostnames | to_json }}'
-    --ips '{{ dev_ips | to_json }}'
+    --hostnames '{{ ansible_play_hosts_all | to_json }}'
+    --ips '{{ host_ips | to_json }}'
     --config "{{ pihole_config_file }}"
   register: script_result
   changed_when: "'Added' in script_result.stdout"
@@ -116,7 +128,7 @@
 # Post-processing: Save the list of hosts for future cleanup
 - name: Save current hostnames to file for future cleanup
   copy:
-    content: "{{ dev_hostnames | to_json }}"
+    content: "{{ ansible_play_hosts_all | to_json }}"
     dest: "{{ pihole_hosts_save_file }}"
     mode: '0644'
   delegate_to: localhost
