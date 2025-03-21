@@ -5,11 +5,14 @@
 # Date: 2025-03-03
 
 galaxy_info:
-  role_name: pihole_dns_records
+  role_name: pihole_dns_records_manager
   author: Lucas Janin
+  company: lucasjanin.com
+  namespace: lucasjanin
   description: Manages Pi-hole DNS records for both standard and Docker installations
   license: MIT
-  min_ansible_version: "2.9"
+  min_ansible_version: "2.12"
+
   platforms:
     - name: GenericLinux
       versions:
@@ -20,4 +23,4 @@ galaxy_info:
     - dns
     - docker
 
-dependencies: []  # No direct dependencies
+dependencies: []

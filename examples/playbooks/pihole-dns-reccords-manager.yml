@@ -1,15 +1,13 @@
-# File: playbooks/pihole-dns-reccords-manager.yml
-# Description: Ansible playbook for managing PiHole DNS records
+---
+# Date: 2025-03-21
+# Description: Playbook to auto setup hosts on PiHole
 # Author: Lucas Janin
-# Date: 2025-03-03
 
 - name: Auto setup hosts on PiHole
   hosts: all
   become: true
-  become_method: sudo
-  
+  become_method: ansible.builtin.sudo
   tasks:
-    - name: ansible-role-pihole-dns-reccords-manager
-      include_role:
+    - name: Ansible Role Pihole DNS Records Manager
+      ansible.builtin.include_role:
         name: ansible-role-pihole-dns-reccords-manager
-      run_once: true

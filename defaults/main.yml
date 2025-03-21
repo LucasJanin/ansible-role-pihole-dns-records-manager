@@ -8,7 +8,7 @@
 pihole_host: "pihole"
 
 # Path to Pi-hole configuration file on the remote host
-pihole_toml_file: "/etc/pihole/pihole.toml" 
+pihole_toml_file: "/etc/pihole/pihole.toml"
 
 # Local storage directory for the role
 pihole_local_storage_dir: "/tmp/pihole-dns-records-manager"

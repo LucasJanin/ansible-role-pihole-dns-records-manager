@@ -4,16 +4,17 @@
 # Author: Lucas Janin
 # Date: 2025-03-03
 
-- name: restart pihole-FTL
-  systemd:
+- name: Restart pihole-FTL
+  ansible.builtin.systemd:
     name: pihole-FTL
     state: restarted
   delegate_to: "{{ pihole_host }}"
   become: true
   when: not pihole_docker_mode
 
-- name: restart pihole docker container
-  command: "docker restart {{ pihole_docker_container_name }}"
+- name: Restart pihole docker container
+  ansible.builtin.command: "docker restart {{ pihole_docker_container_name }}"
+  changed_when: false    # Explicitly do not mark as changed if no change is needed
   delegate_to: "{{ pihole_host }}"
   become: true
   when: pihole_docker_mode

@@ -6,17 +6,17 @@
 
 # Create role data directory if it doesn't exist
 - name: Ensure role data directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ pihole_local_storage_dir }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
   delegate_to: localhost
   connection: local
   become: false
 
 # Pre-processing: Check for previous hosts configuration
 - name: Check if previous hosts save file exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ pihole_hosts_save_file }}"
   register: hosts_save_file
   delegate_to: localhost
@@ -24,7 +24,7 @@
   become: false
 
 - name: Read previous hosts from save file if it exists
-  slurp:
+  ansible.builtin.slurp:
     src: "{{ pihole_hosts_save_file }}"
   register: previous_hosts_content
   when: hosts_save_file.stat.exists
@@ -33,7 +33,7 @@
   become: false
 
 - name: Parse previous hosts
-  set_fact:
+  ansible.builtin.set_fact:
     previous_hostnames: "{{ previous_hosts_content.content | b64decode | from_json }}"
   when: hosts_save_file.stat.exists
   delegate_to: localhost
@@ -42,7 +42,7 @@
 
 # Create list of IP addresses from hostvars
 - name: Create list of IP addresses
-  set_fact:
+  ansible.builtin.set_fact:
     host_ips: "{{ host_ips | default([]) + [hostvars[item].ansible_host | default('')] }}"
   loop: "{{ ansible_play_hosts_all }}"
   delegate_to: localhost
@@ -52,7 +52,7 @@
 
 # Validate input parameters
 - name: Validate input parameters
-  assert:
+  ansible.builtin.assert:
     that:
       - ansible_play_hosts_all | length == host_ips | length
       - not (host_ips | select('equalto', '') | list | length > 0)
@@ -64,16 +64,16 @@
 
 # Main processing: Fetch Pi-hole config
 - name: Fetch pihole.toml from remote Pi-hole server
-  fetch:
+  ansible.builtin.fetch:
     src: "{{ pihole_toml_file }}"
     dest: "{{ pihole_config_file }}"
-    flat: yes
+    flat: true
   delegate_to: "{{ pihole_host }}"
   become: true
 
 # Get original file stats
 - name: Get original file stats
-  stat:
+  ansible.builtin.stat:
     path: "{{ pihole_toml_file }}"
   register: original_file_stats
   delegate_to: "{{ pihole_host }}"
@@ -81,13 +81,14 @@
 
 # Remove previous hosts before adding new ones
 - name: Remove previous hosts before adding new ones
-  command: >
-    python3 {{ role_path }}/files/manage_pihole_dns_records.py 
+  ansible.builtin.command: >
+    python3 {{ role_path }}/files/manage_pihole_dns_records.py
     --action remove
     --hostnames '{{ previous_hostnames | to_json }}'
     --config "{{ pihole_config_file }}"
   register: cleanup_result
-  when: 
+  changed_when: false    # Explicitly do not mark as changed if no removal is required
+  when:
     - hosts_save_file.stat.exists
     - previous_hostnames is defined
     - previous_hostnames | length > 0
@@ -97,8 +98,8 @@
 
 # Add new DNS records
 - name: Add new DNS records
-  command: >
-    python3 {{ role_path }}/files/manage_pihole_dns_records.py 
+  ansible.builtin.command: >
+    python3 {{ role_path }}/files/manage_pihole_dns_records.py
     --action add
     --hostnames '{{ ansible_play_hosts_all | to_json }}'
     --ips '{{ host_ips | to_json }}'
@@ -112,7 +113,7 @@
 
 # Copy modified config back to Pi-hole server with preserved permissions
 - name: Copy modified pihole.toml back to server
-  copy:
+  ansible.builtin.copy:
     src: "{{ pihole_config_file }}"
     dest: "{{ pihole_toml_file }}"
     owner: "{{ original_file_stats.stat.pw_name | default(omit) }}"
@@ -121,16 +122,17 @@
   delegate_to: "{{ pihole_host }}"
   become: true
   when: >
-    (script_result is defined and script_result.stdout is defined and 'Added' in script_result.stdout) or
+    (script_result is defined and script_result.stdout is defined and 'Added' in script_result.stdout)
+    or
     (cleanup_result is defined and cleanup_result.stdout is defined and 'Removed' in cleanup_result.stdout)
   notify: "{{ 'restart pihole docker container' if pihole_docker_mode else 'restart pihole-FTL' }}"
 
 # Post-processing: Save the list of hosts for future cleanup
 - name: Save current hostnames to file for future cleanup
-  copy:
+  ansible.builtin.copy:
     content: "{{ ansible_play_hosts_all | to_json }}"
     dest: "{{ pihole_hosts_save_file }}"
-    mode: '0644'
+    mode: "0644"
   delegate_to: localhost
   connection: local
   become: false
