@@ -6,7 +6,6 @@
 
 galaxy_info:
   role_name: pihole_dns_records_manager
-  namespace: lucasjanin
   author: Lucas Janin
   description: Manages Pi-hole DNS records for both standard and Docker installations
   company: lucasjanin.com
