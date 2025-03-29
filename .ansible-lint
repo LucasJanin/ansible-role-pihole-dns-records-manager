@@ -1,0 +1,4 @@
+---
+# .ansible-lint configuration file for ansible-role-bashrc-custom-manager
+skip_list:
+  - role-name
