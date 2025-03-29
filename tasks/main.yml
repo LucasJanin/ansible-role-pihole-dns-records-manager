@@ -125,14 +125,20 @@
     (script_result is defined and script_result.stdout is defined and 'Added' in script_result.stdout)
     or
     (cleanup_result is defined and cleanup_result.stdout is defined and 'Removed' in cleanup_result.stdout)
-  notify: "{{ 'restart pihole docker container' if pihole_docker_mode else 'restart pihole-FTL' }}"
+  notify:
+    - "{{ pihole_docker_mode | ternary('restart pihole docker container', 'restart pihole-FTL') }}"
 
-# Post-processing: Save the list of hosts for future cleanup
-- name: Save current hostnames to file for future cleanup
+- name: Copy modified pihole.toml back to server
   ansible.builtin.copy:
-    content: "{{ ansible_play_hosts_all | to_json }}"
-    dest: "{{ pihole_hosts_save_file }}"
-    mode: "0644"
-  delegate_to: localhost
-  connection: local
-  become: false
+    src: "{{ pihole_config_file }}"
+    dest: "{{ pihole_toml_file }}"
+    owner: "{{ original_file_stats.stat.pw_name | default(omit) }}"
+    group: "{{ original_file_stats.stat.gr_name | default(omit) }}"
+    mode: "{{ original_file_stats.stat.mode | default(omit) }}"
+  delegate_to: "{{ pihole_host }}"
+  become: true
+  when: >
+    (script_result is defined and script_result.stdout is defined and 'Added' in script_result.stdout)
+    or
+    (cleanup_result is defined and cleanup_result.stdout is defined and 'Removed' in cleanup_result.stdout)
+  notify: "{{ 'restart pihole docker container' if pihole_docker_mode else 'restart pihole-FTL' }}"

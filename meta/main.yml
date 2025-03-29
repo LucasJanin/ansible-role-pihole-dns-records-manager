@@ -9,7 +9,7 @@ galaxy_info:
   author: Lucas Janin
   description: Manages Pi-hole DNS records for both standard and Docker installations
   company: lucasjanin.com
-  issue_tracker_url: https://github.com/LucasJanin/ansible-role-pihole-dns-reccords-manager/issues
+  issue_tracker_url: https://github.com/LucasJanin/ansible-role-pihole-dns-records-manager/issues
   license: MIT
   min_ansible_version: "2.12"
 

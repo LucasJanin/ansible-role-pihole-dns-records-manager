@@ -1,10 +1,10 @@
 ---
 # File: handlers/main.yml
-# Description: Handlers for pihole-dns-records role
+# Description: Handlers for pihole-dns-records-manager role
 # Author: Lucas Janin
 # Date: 2025-03-03
 
-- name: Restart pihole-FTL
+- name: restart pihole-FTL
   ansible.builtin.systemd:
     name: pihole-FTL
     state: restarted
@@ -12,7 +12,7 @@
   become: true
   when: not pihole_docker_mode
 
-- name: Restart pihole docker container
+- name: restart pihole docker container
   ansible.builtin.command: "docker restart {{ pihole_docker_container_name }}"
   changed_when: false
   delegate_to: "{{ pihole_host }}"

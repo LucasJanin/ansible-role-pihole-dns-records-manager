@@ -1,6 +1,6 @@
 # Pi-hole DNS Records Manager - Example
 
-This example demonstrates how to use the ⁠ansible-role-pihole-dns-reccords-manager role to automatically configure DNS records in Pi-hole based on your Ansible inventory.
+This example demonstrates how to use the ⁠ansible-role-pihole-dns-records-manager role to automatically configure DNS records in Pi-hole based on your Ansible inventory.
 
 ## Overview
 The example consists of:
@@ -8,7 +8,7 @@ The example consists of:
 - An inventory file with various host groups (servers, LXC containers, VMs)
 
 ## Files
-- ⁠playbooks/pihole-dns-reccords-manager.yml: The main playbook
+- ⁠playbooks/pihole-dns-records-manager.yml: The main playbook
 - ⁠inventory: Example inventory file
 
 ## How It Works
@@ -19,11 +19,11 @@ The playbook automatically:
 
 ## Usage
 Run the playbook with:
-ansible-playbook -i inventory playbooks/pihole-dns-reccords-manager.yml
+ansible-playbook -i inventory playbooks/pihole-dns-records-manager.yml
 
 ## Playbook Details
 ```yaml
-# File: playbooks/pihole-dns-reccords-manager.yml
+# File: playbooks/pihole-dns-records-manager.yml
 # Description: Ansible playbook for managing PiHole DNS records
 # Author: Lucas Janin
 # Date: 2025-03-03
@@ -34,9 +34,9 @@ ansible-playbook -i inventory playbooks/pihole-dns-reccords-manager.yml
   become_method: sudo
   
   tasks:
-    - name: ansible-role-pihole-dns-reccords-manager
+    - name: ansible-role-pihole-dns-records-manager
       include_role:
-        name: ansible-role-pihole-dns-reccords-manager
+        name: ansible-role-pihole-dns-records-manager
       run_once: true
 ```
 
@@ -67,7 +67,7 @@ You can customize this example by:
 - Ansible 2.9 or higher
 - SSH access to all hosts in the inventory
 - A running Pi-hole instance
-- The ⁠ansible-role-pihole-dns-reccords-manager role installed
+- The ⁠ansible-role-pihole-dns-records-manager role installed
 
 ## Notes
 

@@ -10,4 +10,4 @@
   tasks:
     - name: Ansible Role Pihole DNS Records Manager
       ansible.builtin.include_role:
-        name: ansible-role-pihole-dns-reccords-manager
+        name: ansible-role-pihole-dns-records-manager
