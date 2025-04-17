@@ -12,7 +12,7 @@
   become: true
   when: not pihole_docker_mode
 
-- name: Restart pihole docker container
+- name: Restart Pihole Docker Container
   ansible.builtin.command: "docker restart {{ pihole_docker_container_name }}"
   changed_when: false
   delegate_to: "{{ pihole_host }}"

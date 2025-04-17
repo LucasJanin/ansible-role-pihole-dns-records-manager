@@ -126,19 +126,4 @@
     or
     (cleanup_result is defined and cleanup_result.stdout is defined and 'Removed' in cleanup_result.stdout)
   notify:
-    - "{{ pihole_docker_mode | ternary('restart pihole docker container', 'restart pihole-FTL') }}"
-
-- name: Copy modified pihole.toml back to server
-  ansible.builtin.copy:
-    src: "{{ pihole_config_file }}"
-    dest: "{{ pihole_toml_file }}"
-    owner: "{{ original_file_stats.stat.pw_name | default(omit) }}"
-    group: "{{ original_file_stats.stat.gr_name | default(omit) }}"
-    mode: "{{ original_file_stats.stat.mode | default(omit) }}"
-  delegate_to: "{{ pihole_host }}"
-  become: true
-  when: >
-    (script_result is defined and script_result.stdout is defined and 'Added' in script_result.stdout)
-    or
-    (cleanup_result is defined and cleanup_result.stdout is defined and 'Removed' in cleanup_result.stdout)
-  notify: "{{ 'restart pihole docker container' if pihole_docker_mode else 'restart pihole-FTL' }}"
+    - "{{ 'Restart Pihole Docker Container' if pihole_docker_mode else 'Restart pihole-FTL' }}"
